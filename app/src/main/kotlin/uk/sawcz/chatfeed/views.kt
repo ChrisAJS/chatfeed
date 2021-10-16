@@ -45,8 +45,8 @@ fun TextWithShadow(
             textAlign = textAlign,
             modifier = modifier
                 .offset(
-                    x = 2.dp,
-                    y = 2.dp
+                    x = 1.dp,
+                    y = 1.dp
                 )
                 .alpha(0.75f)
         )
@@ -81,13 +81,14 @@ fun EmojiAwareText(message: String) {
 
         for (i in emojis.indices) {
             this.appendInlineContent(emojis[i], emojis[i])
-            this.append(messageComponents[i+1])
+            this.append(messageComponents[i + 1])
         }
     }
     Text(
         chatMessage, inlineContent = mapOf(
             "Kappa" to emojiContent("Kappa", "emotes/kappa.png"),
             "LUL" to emojiContent("LUL", "emotes/lul.png"),
+            "BibleThump" to emojiContent("BibleThump", "emotes/biblethump.png"),
             "HeyGuys" to emojiContent("HeyGuys", "emotes/heyguys.png"),
             "CoolStoryBob" to emojiContent("CoolStoryBob", "emotes/bob.png"),
             "4Head" to emojiContent("4Head", "emotes/4head.png"),
@@ -106,9 +107,10 @@ fun EmojiAwareText(message: String) {
     )
 }
 
-private fun emojiContent(emojiName: String, emojiResource: String) = InlineTextContent(Placeholder(32.sp, 32.sp, PlaceholderVerticalAlign.AboveBaseline)) {
-    Image(bitmap = useResource(emojiResource, ::loadImageBitmap).asDesktopBitmap().asImageBitmap(), emojiName)
-}
+private fun emojiContent(emojiName: String, emojiResource: String) =
+    InlineTextContent(Placeholder(24.sp, 24.sp, PlaceholderVerticalAlign.AboveBaseline)) {
+        Image(bitmap = useResource(emojiResource, ::loadImageBitmap).asDesktopBitmap().asImageBitmap(), emojiName)
+    }
 
 @Composable
 fun JoinMessage(joinEvent: ChatFeedEvent.JoinEvent) {
@@ -136,13 +138,14 @@ fun Separator() {
 @OptIn(ExperimentalGraphicsApi::class)
 @Composable
 fun ChatMessage(message: ChatFeedEvent.MessageEvent) {
-    val textColor = Color(0xFF000000.or(message.handleColour.drop(1).toInt(16).toLong()))
-    val (h, s, v)  = textColor.toHsv()
+    val textColor =
+        Color(0xFF000000.or((message.handleColour.takeIf { it.isNotEmpty() } ?: "#ff0000").drop(1).toInt(16).toLong()))
+    val (h, s, v) = textColor.toHsv()
 
-    MessageCard(Color.hsv(h, s/2.0f, v)) {
+    MessageCard(Color.hsv(h, s / 8.0f, min(v * 1.5f, 1.0f))) {
         Column(Modifier.padding(16.dp)) {
 
-            TextWithShadow(message.user, fontSize = 24.sp)
+            TextWithShadow(message.user, fontSize = 24.sp, textColor = textColor)
             EmojiAwareText(message.message)
         }
     }
@@ -153,18 +156,21 @@ private fun Color.toHsv(): FloatArray {
     val cmin = min(min(red, blue), green)
     val diff = cmax - cmin
 
-    val h = if (cmax == red) {
-        (60.0f * ((green - blue) / diff)+360.0f) % 360.0f
+
+    val h = if (diff == 0.0f) {
+        0.0f
+    } else if (cmax == red) {
+        (60.0f * ((green - blue) / diff) + 360.0f) % 360.0f
     } else if (cmax == green) {
-        (60.0f * ((blue - red) / diff)+120.0f) % 360.0f
+        (60.0f * ((blue - red) / diff) + 120.0f) % 360.0f
     } else {
-        (60.0f * ((red - green) / diff)+240.0f) % 360.0f
+        (60.0f * ((red - green) / diff) + 240.0f) % 360.0f
     }
 
     val s = if (cmax == 0.0f) {
         0.0f
     } else {
-        (diff/cmax)
+        (diff / cmax)
     }
 
     return floatArrayOf(h, s, cmax)

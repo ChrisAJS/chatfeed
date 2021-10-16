@@ -4,6 +4,7 @@ object EmojiDetector {
     fun process(input: String, emojis: List<String> = listOf(
         "Kappa",
         "LUL",
+        "BibleThump",
         "HeyGuys",
         "CoolStoryBob",
         "4Head",
