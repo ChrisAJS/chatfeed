@@ -3,7 +3,6 @@ package uk.sawcz.ircclient
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import uk.sawcz.ircclient.irc.*
-import java.awt.SystemColor.info
 
 class IRCClientTest {
 
@@ -100,46 +99,20 @@ class IRCClientTest {
         }
         val expectedDisplayName = "DN${System.currentTimeMillis()}"
         val expectedTags = "@badge-info=info;display-name=$expectedDisplayName;emotes=emotes;flags=flags"
-        val unusedNick = "unused"
+        val expectedNick = "unused"
         val expectedHost = "unused"
         val expectedChannel = "#unused"
         val expectedMessage = "unused"
 
-        mockIRCSource.simulateDataIn("$expectedTags :$unusedNick!$expectedHost PRIVMSG $expectedChannel :$expectedMessage")
+        mockIRCSource.simulateDataIn("$expectedTags :$expectedNick!$expectedHost PRIVMSG $expectedChannel :$expectedMessage")
 
         assertEquals(
             IRCEvent.PrivateMessageEvent(
-                expectedDisplayName,
+                expectedNick,
                 expectedHost,
                 expectedChannel,
                 expectedMessage,
                 mapOf("badge-info" to "info", "display-name" to expectedDisplayName, "emotes" to "emotes", "flags" to "flags")
-            ), capturedEvent)
-    }
-
-    @Test
-    fun willEmitEventWhenUserSendsMessageWithTagsUsingDisplayNameAsNick() {
-
-        lateinit var capturedEvent: IRCEvent
-
-        ircClient.onEvent { event ->
-            capturedEvent = event
-        }
-        val expectedDisplayName = "DisplayName${System.currentTimeMillis()}"
-        val expectedTags = "@badge-info=;display-name=$expectedDisplayName;emotes=;flags="
-        val unusedNick = "${System.currentTimeMillis()}"
-        val expectedHost = "${System.currentTimeMillis()}@justinfan348934.tmi.twitch.tv"
-        val expectedChannel = "#elfeesho${System.currentTimeMillis()}"
-        val expectedMessage = "some message that's awesome ${System.currentTimeMillis()}"
-
-        mockIRCSource.simulateDataIn("$expectedTags :$unusedNick!$expectedHost PRIVMSG $expectedChannel :$expectedMessage")
-
-        assertEquals(
-            IRCEvent.PrivateMessageEvent(
-                expectedDisplayName,
-                expectedHost,
-                expectedChannel,
-                expectedMessage
             ), capturedEvent)
     }
 
@@ -197,5 +170,21 @@ class IRCClientTest {
 
         mockIRCSource.simulateDataIn(":${System.currentTimeMillis()}!${System.currentTimeMillis()}@justinfan348934.tmi.twitch.tv JOIN #elfeesho${System.currentTimeMillis()}")
 
+    }
+
+    @Test
+    fun canSendPasswordEvent() {
+
+        ircClient.sendCommand(IRCCommand.PassCommand("oauth:an-oauth-token"))
+
+        assertEquals(listOf("PASS oauth:an-oauth-token"), mockIRCSource.capturedSentCommands)
+    }
+
+    @Test
+    fun canSendPrivateMessage() {
+
+        ircClient.sendCommand(IRCCommand.PrivateMessageCommand("#channel", "message"))
+
+        assertEquals(listOf("PRIVMSG #channel :message"), mockIRCSource.capturedSentCommands)
     }
 }

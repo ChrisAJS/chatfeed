@@ -35,8 +35,14 @@ fun App() {
 
     var messages by remember { mutableStateOf(listOf<ChatFeedEvent>()) }
 
+    val onSuperUserEvent: (String) -> Unit = { event ->
+        if (event == "!clear") {
+            messages = listOf()
+        }
+    }
+
     val messageSeparator = MessageSeparator(SystemClockTimeSource())
-    ChatFeedEventSource { chatFeedEvent ->
+    ChatFeedEventSource(onSuperUserEvent) { chatFeedEvent ->
         messages = messageSeparator.separateIfRequired(messages)
         messages = MessageGrouper.group(messages, chatFeedEvent)
     }

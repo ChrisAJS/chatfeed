@@ -50,5 +50,10 @@ class MessageGrouperTest {
         assertEquals(listOf(msg("A", "A")), MessageGrouper.group(emptyList(), msg("A", "A")))
     }
 
-    private fun msg(user: String, message: String) = ChatFeedEvent.MessageEvent(user, message)
+    @Test
+    fun willNotLoseHandleColour() {
+        assertEquals(listOf(msg("A", "A\nB", "#ff0000")), MessageGrouper.group(listOf(msg("A", "A", "#ff0000")), msg("A", "B")))
+    }
+
+    private fun msg(user: String, message: String, colour: String = "#ffffff") = ChatFeedEvent.MessageEvent(user, message, colour)
 }

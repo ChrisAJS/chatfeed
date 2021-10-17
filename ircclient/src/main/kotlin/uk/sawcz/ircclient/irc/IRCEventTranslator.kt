@@ -13,7 +13,7 @@ object IRCEventTranslator {
                 tags[name] = value
             }
 
-            targetEventString = targetEventString.drop(tagString.length+2)
+            targetEventString = targetEventString.drop(tagString.length+1)
         }
         val (source, event, target) = targetEventString.split(" ")
 
@@ -28,7 +28,7 @@ object IRCEventTranslator {
             }
             "PRIVMSG" -> {
                 val (nick, host) = source.drop(1).split("!")
-                IRCEvent.PrivateMessageEvent(tags.getOrDefault("display-name", nick), host, target, targetEventString.drop(1).dropWhile { it != ':' }.substring(1), tags)
+                IRCEvent.PrivateMessageEvent(nick, host, target, targetEventString.drop(1).dropWhile { it != ':' }.substring(1), tags)
             }
             else -> IRCEvent.UnknownEvent(eventString)
         }

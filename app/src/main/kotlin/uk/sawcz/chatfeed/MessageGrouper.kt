@@ -35,10 +35,7 @@ object MessageGrouper {
                 val event = messageList.last()
                 if (event is ChatFeedEvent.MessageEvent) {
                     if (event.user == nextEvent.user) {
-                        return messageList.dropLast(1) + ChatFeedEvent.MessageEvent(
-                            event.user,
-                            event.message + "\n" + nextEvent.message
-                        )
+                        return messageList.dropLast(1) + event.copy(message = event.message + "\n" + nextEvent.message)
                     }
                 }
             }
